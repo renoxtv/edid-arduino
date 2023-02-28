@@ -1,0 +1,59 @@
+#include <Wire.h>
+
+#define EEPROM_ADDR 0x54  // Address of 24LC256 eeprom chip
+#define WP_PIN 4          // Write protect pin
+
+char lainovo_EDID[] = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x30, 0xAE, 0xA3, 0x40, 0x00,
+                       0x00, 0x00, 0x00, 0x00, 0x17, 0x01, 0x04, 0x95, 0x1F, 0x11, 0x78, 0xEA, 0x86,
+                       0x25, 0xA2, 0x5A, 0x55, 0xA1, 0x28, 0x0B, 0x50, 0x54, 0x00, 0x00, 0x00, 0x01,
+                       0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+                       0x01, 0x01, 0xBA, 0x36, 0x80, 0xAC, 0x70, 0x38, 0x24, 0x40, 0x3C, 0x24, 0x35,
+                       0x00, 0x35, 0xAF, 0x10, 0x00, 0x00, 0x1A, 0xBA, 0x36, 0x80, 0xC2, 0x70, 0x38,
+                       0x24, 0x40, 0x3C, 0x24, 0x35, 0x00, 0x35, 0xAF, 0x10, 0x00, 0x00, 0x1A, 0x00,
+                       0x00, 0x00, 0x0F, 0x00, 0xD1, 0x09, 0x3B, 0xD1, 0x09, 0x3B, 0x1E, 0x0A, 0x00,
+                       0x30, 0xE4, 0x0A, 0x04, 0x00, 0x00, 0x00, 0xFE, 0x00, 0x4C, 0x50, 0x31, 0x34,
+                       0x30, 0x57, 0x46, 0x31, 0x2D, 0x53, 0x50, 0x4B, 0x31, 0x00, 0x06};
+
+void setup() {
+    pinMode(WP_PIN, OUTPUT);
+    digitalWrite(WP_PIN, LOW);  // DISABLE write protect
+    Wire.begin();
+    Serial.begin(9600);
+
+    Serial.println("Writing EDID");
+    for (unsigned int addr = 0; addr < sizeof(lainovo_EDID); addr++) {
+        writeEEPROM(EEPROM_ADDR, addr, lainovo_EDID[addr]);
+        Serial.print(readEEPROM(EEPROM_ADDR, addr), HEX);
+        Serial.print(' ');
+        if ((addr + 1) % 16 == 0) Serial.println();
+    }
+}
+
+void loop() {
+    /*there's nothing in the loop() function because we don't want the arduino to
+    repeatedly write the same thing to the EEPROM over and over.
+    We just want a one-time write, so the loop() function is avoided with EEPROMs.*/
+}
+
+// defines writeEEPROM
+void writeEEPROM(int deviceaddress, unsigned int eeaddress, byte data) {
+    Wire.beginTransmission(deviceaddress);
+    Wire.write((int)(eeaddress >> 8));    // writes the MSB
+    Wire.write((int)(eeaddress & 0xFF));  // writes the LSB
+    Wire.write(data);
+    Wire.endTransmission();
+
+    delay(5);
+}
+
+// defines readEEPROM
+byte readEEPROM(int deviceaddress, unsigned int eeaddress) {
+    byte rdata = 0xFF;
+    Wire.beginTransmission(deviceaddress);
+    Wire.write((int)(eeaddress >> 8));    // writes the MSB
+    Wire.write((int)(eeaddress & 0xFF));  // writes the LSB
+    Wire.endTransmission();
+    Wire.requestFrom(deviceaddress, 1);
+    if (Wire.available()) rdata = Wire.read();
+    return rdata;
+}
