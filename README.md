@@ -10,7 +10,7 @@ write.ino: used to write information to the eeprom and report back what was writ
 
 Instructions: 
 
--Peel off the protective cover surrounding the LCD control board. I can't stress enough how careful you should be here, as the flex cables that connect the LCD lines are sensitive and any excess bending/kinking can destroy the panel. The EEPROM test pins are usually on the front side.
+-Peel off the protective cover surrounding the LCD control board, starting from the back side. I can't stress enough how careful you should be here, as the flex cables that connect the LCD lines are sensitive and any excess bending/kinking can destroy the panel. The EEPROM test pins are usually on the front side.
 
 -Connect Vcc to a power supply, usually 2.5V, but the internal 3.3V of the Arduino worked for me
 
